@@ -1,10 +1,10 @@
 "use client";
 import * as React from 'react';
 import Switch from '@mui/material/Switch';
-
+import fs from 'fs';
 import { useCallback, useRef, useState } from "react";
 import Webcam from "react-webcam";
-import Button from '@mui/material/Button';
+import { Button } from '@mui/material';
 
 const videoConstraints = {
   width: 1280,
@@ -18,11 +18,40 @@ export const MyWebcam = () => {
   const [image, setImage] = useState();
   const [isWebcamOn, setIsWebcamOn] = useState(false);
   const webcamRef = useRef<Webcam>(null);
-  const capture = useCallback(() => {
+
+  const capture = useCallback(async () => { // Add 'async' here
     const imageSrc = webcamRef?.current?.getScreenshot();
     console.log(imageSrc);
-  }, [webcamRef]);
+    // Save imageSrc to a JSON file
+    const content = imageSrc;
 
+    if (imageSrc) {
+      const responseData = {
+        status: 'okay',
+        content: content,
+      }
+    };
+
+    if (imageSrc) {
+      try {
+        const response = await fetch('/pages/api/capture', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageSrc }),
+        });
+
+        if (response.ok) {
+          console.log('Data saved successfully');
+        } else {
+          console.error('Failed to save data');
+        }
+      } catch (error) {
+        console.error('Error during API call:', error);
+      }
+    }
+  }, [webcamRef]);
   // Conditionally render Material UI components on the client-side only
   if (typeof window !== "undefined") {
     return (
